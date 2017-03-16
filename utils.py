@@ -9,7 +9,7 @@ mpl.use('Agg')
 from matplotlib import pyplot as plt
 import seaborn as sns
 from operator import itemgetter, attrgetter, methodcaller
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 import itertools
 import shutil
 from itertools import chain
@@ -462,3 +462,11 @@ def resize_image(img, scale=0.5):
     else:
         img = misc.imresize(img, 0.5)
     return img
+
+def size2names_map(img_dir):
+    size2names = defaultdict(list)
+    for name in glob(img_dir+'/*/*.jpg'):
+        img = Image.open(name)
+        img_size = img.size
+        size2names[img_size].append(name)
+    return size2names
