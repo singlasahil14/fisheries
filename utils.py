@@ -4,8 +4,8 @@ import math, os, json, sys, re
 from glob import glob
 import numpy as np
 #np.random.seed(1337)
-import matplotlib as mpl
-mpl.use('Agg')
+import matplotlib
+matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 import seaborn as sns
 from operator import itemgetter, attrgetter, methodcaller
@@ -335,6 +335,18 @@ class FeatureSaver():
         file_names = [fname.split('/')[-1] for fname in datagen.filenames]
         name_dset = f.create_dataset("test_names", data=file_names)
 
+def group_save(group2data_labels, results_dir='data/results/', 
+               img_dir='data/train/', dataset_fname='grouped_data.h5'):
+    f = h5py.File(results_dir+dataset_fname, 'w')
+    for k,v in group2data_labels.iteritems():
+        img_path = img_dir + v[0][1] + '/' + v[0][0]
+        img = np.asarray(Image.open(img_path))
+        data_shape = (None,)+img.shape
+        dataset, = create_arrays(f, [str(k)], [data_shape])
+        for fname, class_name in v:
+            img_path = img_dir + class_name + '/' + fname
+            img = np.asarray(Image.open(img_path))
+            append_array(dataset, img)
 
 class DataSaver():
     def __init__(self, path_folder, 
@@ -361,7 +373,8 @@ class DataSaver():
             data_shape = (None,)+datagen.image_shape
             label_shape = (None,)+(datagen.nb_class,)
 
-            data_dset, label_dset = create_arrays(f, [split_name+'_data', split_name+'_labels'], 
+            data_dset, label_dset = create_arrays(f, [split_name+'_data', 
+                                                     split_name+'_labels'], 
                                                   [data_shape, label_shape])
             for data, labels in get_batches(datagen):
                 append_array(data_dset, data)
